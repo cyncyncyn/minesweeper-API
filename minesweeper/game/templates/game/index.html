@@ -29,14 +29,32 @@
         if(cell.y === 0) {
           currentTr = document.createElement("tr");
           table.appendChild(currentTr)
-          console.log(currentTr)
         }
         const td = document.createElement("td")
         currentTr.appendChild(td)
         const button = document.createElement("button")
+        button.setAttribute("data-x", cell.x)
+        button.setAttribute("data-y", cell.y)
+        button.setAttribute("onClick", "handleClick(event)")
         td.appendChild(button)
       })
     })
+
+    async function handleClick(event){
+      const pressedCell = event.target;
+      const x = pressedCell.dataset.x;
+      const y = pressedCell.dataset.y;
+      const response = await fetch('/game/click/', {
+        method: 'POST',
+        body: JSON.stringify({x, y}),
+        headers:{
+          'Content-Type': 'application/json'
+        }
+      });
+       if (response.status === 400){
+            alert("You lost!")
+       }
+    }
   </script>
 </body>
 </html>
