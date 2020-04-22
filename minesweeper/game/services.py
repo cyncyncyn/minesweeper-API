@@ -1,4 +1,4 @@
-def generate_random_board():
+def generate_board():
     # 8 * 8
     # 10 mines
     board = []
