@@ -4,19 +4,39 @@
 
   <title>Minesweeper</title>
 
+  <style>
+    button {
+      background-color: red;
+      height:20px;
+    }
+  </style>
+
 </head>
 
 <body>
 
-    <table>
+    <table id="board" style="border: 1px solid black">
     </table>
   <script>
     async function getBoard() {
       const response = await fetch("/game/board/");
-      const board = await response.json();
-      console.log(board)
+      return response.json();
     }
-    getBoard();
+    getBoard().then(board => {
+      const table = document.getElementById("board")
+      let currentTr = document.createElement("tr")
+      board.forEach(cell => {
+        if(cell.y === 0) {
+          currentTr = document.createElement("tr");
+          table.appendChild(currentTr)
+          console.log(currentTr)
+        }
+        const td = document.createElement("td")
+        currentTr.appendChild(td)
+        const button = document.createElement("button")
+        td.appendChild(button)
+      })
+    })
   </script>
 </body>
 </html>
