@@ -4,11 +4,11 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from .services import BOARD_SIZE
 
 
 def get_board(request):
-    board = settings.BOARD
-    return JsonResponse(board, safe=False)
+    return JsonResponse({"size": BOARD_SIZE}, safe=False)
 
 def index(request):
     return render(request, template_name="game/index.html")

@@ -10,7 +10,6 @@
       height:20px;
     }
   </style>
-
 </head>
 
 <body>
@@ -22,22 +21,25 @@
       const response = await fetch("/game/board/");
       return response.json();
     }
-    getBoard().then(board => {
+    getBoard().then(config => {
       const table = document.getElementById("board")
       let currentTr = document.createElement("tr")
-      board.forEach(cell => {
-        if(cell.y === 0) {
-          currentTr = document.createElement("tr");
-          table.appendChild(currentTr)
+      const boardSize = config.size;
+      for(let i=0; i< boardSize; i++){
+        currentTr = document.createElement("tr");
+        table.appendChild(currentTr)
+
+        for(let j=0; j < boardSize; j++) {
+          const td = document.createElement("td")
+          currentTr.appendChild(td)
+          const button = document.createElement("button")
+          button.setAttribute("data-x", i)
+          button.setAttribute("data-y", j)
+          button.setAttribute("onClick", "handleClick(event)")
+          td.appendChild(button)
         }
-        const td = document.createElement("td")
-        currentTr.appendChild(td)
-        const button = document.createElement("button")
-        button.setAttribute("data-x", cell.x)
-        button.setAttribute("data-y", cell.y)
-        button.setAttribute("onClick", "handleClick(event)")
-        td.appendChild(button)
-      })
+
+      }
     })
 
     async function handleClick(event){

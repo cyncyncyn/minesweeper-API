@@ -1,6 +1,5 @@
+BOARD_SIZE = 8
 def generate_board():
-    # 8 * 8
-    # 10 mines
     board = []
     minesPosition = [
         (1,2),
@@ -14,8 +13,8 @@ def generate_board():
         (0,0),
         (2,2),
     ]
-    for row in range (0,9):
-        for cell in range(0,9):
+    for row in range (0, BOARD_SIZE):
+        for cell in range(0, BOARD_SIZE):
             mine = (row, cell) in minesPosition
             board.append({
                 "x":row,
