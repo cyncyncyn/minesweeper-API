@@ -15,9 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from game.views import get_board
+from game.views import get_board, index
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('game/board/', get_board)
+    path('game/board/', get_board),
+    path('', index)
 ]

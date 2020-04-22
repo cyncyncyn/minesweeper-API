@@ -1,0 +1,22 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Minesweeper</title>
+
+</head>
+
+<body>
+
+    <table>
+    </table>
+  <script>
+    async function getBoard() {
+      const response = await fetch("/game/board/");
+      const board = await response.json();
+      console.log(board)
+    }
+    getBoard();
+  </script>
+</body>
+</html>
