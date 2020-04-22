@@ -6,7 +6,7 @@
 
   <style>
     button {
-      background-color: red;
+      background-color: gray;
       height:20px;
     }
   </style>
@@ -17,6 +17,8 @@
     <table id="board" style="border: 1px solid black">
     </table>
   <script>
+    const discoveredCells = 0
+    let boardSize = 0
     async function getBoard() {
       const response = await fetch("/game/board/");
       return response.json();
@@ -24,7 +26,7 @@
     getBoard().then(config => {
       const table = document.getElementById("board")
       let currentTr = document.createElement("tr")
-      const boardSize = config.size;
+      boardSize = config.size;
       for(let i=0; i< boardSize; i++){
         currentTr = document.createElement("tr");
         table.appendChild(currentTr)
@@ -54,7 +56,31 @@
         }
       });
        if (response.status === 400){
-            alert("You lost!")
+          pressedCell.style.backgroundColor = 'red'
+          alert("You lost :(")
+          const buttons = document.getElementsByTagName("button")
+          for (button of buttons) {
+            button.setAttribute("disabled", "")
+          }
+       } else {
+        // add adjacents and pressed cell as green and to the discovered cells
+        const data = await response.json()
+        debugger
+        const table = document.getElementById("board")
+        data.forEach(coords => {
+          const trs = table.getElementsByTagName("tr");
+          const tr = trs[coords[0]];
+          const tds = tr.getElementsByTagName("td");
+          const td = tds[coords[1]];
+          td.style.backgroundColor = "green";
+        }
+
+        )
+
+         pressedCell.style.backgroundColor = 'green'
+         if (discoveredCells === boardSize * boardSize) {
+           alert("You won :)")
+         }
        }
     }
   </script>
