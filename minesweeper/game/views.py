@@ -27,7 +27,7 @@ def click(request):
         x = int(data["x"])
         y = int(data["y"])
 
-        board_id = int(data.get("boardId", 1))
+        board_id = int(data.get("boardId", 0))
         board = settings.BOARDS[board_id]
 
         if cell_has_mine(board, x, y):
