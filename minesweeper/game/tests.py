@@ -3,52 +3,45 @@ from django.test import Client, TestCase
 from .services import BOARD_SIZE, find_adjacents
 
 
+from django.conf import settings
+
+
 class APITestCase(TestCase):
-    # TODO: board is hardcoded for this demo version
-    # After this version we should use a random board and select
-    # a coord with each case (coord with adjacent mine, coord with mine,
-    #  coord with no adjacent mine)
+    BOARD_ID = 0
+    BOARD = settings.BOARDS[BOARD_ID]
+
+    def get_cell_position(self, mine=True):
+        """ Returns first cell founds that matches mine param """
+        for i, row in enumerate(self.BOARD):
+            for j, col in enumerate(row):
+                if col == mine:
+                    return i, j
+
     def test_board_is_returned(self):
         client = Client()
         response = client.get('/game/board/')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {'size': BOARD_SIZE})
 
-    def test_game_ends_if_hitting_mine(self):
+        self.assertEqual(response.status_code, 200)
+
+        decoded_response = response.json()
+        self.assertEqual(decoded_response['boardSize'], BOARD_SIZE)
+        self.assertIn(decoded_response['boardId'], range(len(settings.BOARDS)))
+
+    def test_game_returns_400_if_hitting_mine(self):
+        x, y = self.get_cell_position(mine=True)
         client = Client()
         response = client.post(
-            '/game/click/', '{"x":1,"y":2}'.encode('utf-8'),
+            '/game/click/', {"x": x, "y": y, "boardId": self.BOARD_ID},
             content_type="application/json")
         self.assertEqual(response.status_code, 400)
 
     def test_game_returns_200_if_no_mine_hit(self):
+        x, y = self.get_cell_position(mine=False)
         client = Client()
         response = client.post(
-            '/game/click/', '{"x":3,"y":4}'.encode('utf-8'),
+            '/game/click/', {"x": x, "y": y, "boardId": self.BOARD_ID},
             content_type="application/json")
         self.assertEqual(response.status_code, 200)
-
-    def test_returns_empty_adjacents_if_no_mine_hit_but_mine_is_neighbour(self):
-        client = Client()
-        coord_with_adjacent_mine = '{"x": 3,"y": 4}'
-        response = client.post(
-            '/game/click/', coord_with_adjacent_mine.encode('utf-8'),
-            content_type="application/json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), [])
-
-    def test_returns_adjacents_if_no_mine_hit(self):
-        client = Client()
-        coord_with_adjacent_mine = '{"x": 7,"y": 7}'
-        response = client.post(
-            '/game/click/', coord_with_adjacent_mine.encode('utf-8'),
-            content_type="application/json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.json(), [
-                [6, 6], [5, 5], [5, 6], [5, 7], [6, 5], [6, 7], [7, 6], [7, 5]
-            ]
-        )
 
 
 class FindAdjacentsWithoutMinesTestCase(TestCase):

@@ -1,29 +1,30 @@
 BOARD_SIZE = 8
 
 
-def generate_board():
+def generate_board(random_mines):
     board = []
-    minesPosition = [
-        (0, 0),
-        (0, 1),
-        (0, 8),
-        (1, 1),
-        (1, 2),
-        (2, 2),
-        (3, 1),
-        (3, 2),
-        (4, 4),
-        (4, 6),
-        (7, 4),
-        (7, 8),
-    ]
     for rowIndex in range(0, BOARD_SIZE):
         row = []
         for colIndex in range(0, BOARD_SIZE):
-            hasMine = (rowIndex, colIndex) in minesPosition
+            hasMine = (rowIndex, colIndex) in random_mines
             row.append(hasMine)
         board.append(row)
     return board
+
+
+def generate_boards():
+    boards = []
+    for x in range(10):
+        import random
+        random_mines = [
+            (
+                random.randrange(0, BOARD_SIZE),
+                random.randrange(0, BOARD_SIZE)
+            ) for i in range(10)
+         ]
+        boards.append(generate_board(random_mines))
+
+    return boards
 
 
 def cell_has_mine(board, x, y):
