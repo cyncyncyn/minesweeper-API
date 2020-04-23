@@ -1,39 +1,62 @@
-# minesweeper-API
-API test
+# Minesweeper API:
+Local run:
 
-We ask that you complete the following challenge to evaluate your development skills. Please use the programming language and framework discussed during your interview to accomplish the following task.
+1. Create virtualenv
+2. `pip install -r requirements.txt`
+3. Run server `python manage.py runserver`
+4. Open `http://localhost:8000`
+5. Enjoy!
+6. Run tests `python mange.py test`
 
-PLEASE DO NOT FORK THE REPOSITORY. WE NEED A PUBLIC REPOSITORY FOR THE REVIEW. 
+## The API
+### GET /game/board/
+#### Request:
 
-## The Game
-Develop the classic game of [Minesweeper](https://en.wikipedia.org/wiki/Minesweeper_(video_game))
+```bash
+  curl localhost:8001/game/board/
+```
 
-## Show your work
+#### Responses:
 
-1.  Create a Public repository ( please dont make a pull request, clone the private repository and create a new plublic one on your profile)
-2.  Commit each step of your process so we can follow your thought process.
+* 200: `{"boardSize": int, "boardId": int}`
 
-## What to build
-The following is a list of items (prioritized from most important to least important) we wish to see:
-* Design and implement  a documented RESTful API for the game (think of a mobile app for your API)
-* Implement an API client library for the API designed above. Ideally, in a different language, of your preference, to the one used for the API
-* When a cell with no adjacent mines is revealed, all adjacent squares will be revealed (and repeat)
-* Ability to 'flag' a cell with a question mark or red flag
-* Detect when game is over
-* Persistence
-* Time tracking
-* Ability to start a new game and preserve/resume the old ones
-* Ability to select the game parameters: number of rows, columns, and mines
-* Ability to support multiple users/accounts
- 
-## Deliverables we expect:
-* URL where the game can be accessed and played (use any platform of your preference: heroku.com, aws.amazon.com, etc)
-* Code in a public Github repo
-* README file with the decisions taken and important notes
+boardSize (int):  is now hardcoded in 8, could be randomized in future iterations.
 
-## Time Spent
-You do not need to fully complete the challenge. We suggest not to spend more than 5 hours total, which can be done over the course of 2 days.  Please make commits as often as possible so we can see the time you spent and please do not make one commit.  We will evaluate the code and time spent.
- 
-What we want to see is how well you handle yourself given the time you spend on the problem, how you think, and how you prioritize when time is insufficient to solve everything.
+boardId(int): Until now there are 10 possible boards saved on the server, until persistence is implemented
 
-Please email your solution as soon as you have completed the challenge or the time is up.
+### POST game/click/
+#### Request:
+```bash
+curl \
+  --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"x":2,"y":7, "boardId": 1}' \
+  localhost:8001/game/click/
+```
+
+#### Responses
+
+* 200: `[[]]` List of all adjacent neighbours until a mine is found 
+* 400: `{}` Game OVER!
+
+##### Example of 200 response:
+
+```
+[[1, 6], [1, 7], [0, 6], [0, 5], [0, 7], [1, 5], [2, 6], [3, 6], [3, 7], [4, 6], [4, 7], [5, 6], [5, 7], [6, 6], [6, 7], [7, 6], [6, 5], [7, 5], [6, 4], [7, 4], [6, 3], [5, 2], [5, 3], [5, 4], [6, 2], [5, 1], [6, 1], [7, 1], [7, 2], [7, 3], [7, 7]]
+```
+
+# Decisions made:
+
+## Technologies
+The game logic and API was developed in Python 3, using the Django framework for expediency.
+The API client was developed in JavaScript (With HTML and CSS).
+
+## The project
+In order of arriving in time, the decision was to create a prototype of the game to be presented in a client meeting.
+The first effort made was creating a hardcoded board that worked as expected (particularly the part of finding the adjacent cells with/without mines)
+
+Once the logic of the game was working there were a refactor to pseudo-randomize the board.
+
+As persistence was not implemented (because of short time) the decision was to generate 10 random boards and save them in the Django settings. Those would only change if the server is reset. However, every time you hit f5 in the website, you get a random board from those 10.
+
+The part of losing the game is implemented, as it was trivial. However the winning part should have a little bit more of coding, in a future iteration (by calculating  `total_cells - total_mines` and validating onClick if that number matches the number of revealed cells).
