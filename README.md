@@ -6,14 +6,14 @@ Local run:
 3. Run server `python manage.py runserver`
 4. Open `http://localhost:8000`
 5. Enjoy!
-6. Run tests `python mange.py test`
+6. Run tests `python manage.py test`
 
 ## The API
 ### GET /game/board/
 #### Request:
 
 ```bash
-  curl localhost:8001/game/board/
+  curl localhost:8000/game/board/
 ```
 
 #### Responses:
@@ -31,7 +31,7 @@ curl \
   --header "Content-Type: application/json" \
   --request POST \
   --data '{"x":2,"y":7, "boardId": 1}' \
-  localhost:8001/game/click/
+  localhost:8000/game/click/
 ```
 
 #### Responses
