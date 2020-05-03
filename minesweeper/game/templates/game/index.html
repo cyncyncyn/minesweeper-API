@@ -13,6 +13,7 @@
 </head>
 
 <body>
+    <div>Game status: <span id="gameStatus">Playing</span></div>
     <table id="board" style="border: 1px solid black">
     </table>
   <script>
@@ -70,16 +71,13 @@
 
       });
 
-      const {is_flagged} = await response.json()
+      const {is_flagged, is_uncovered} = await response.json();
+
       const tr = document.getElementsByTagName("tr")[x];
       const button = tr.getElementsByTagName("button")[y];
-      if (is_flagged) {
-          button.style.backgroundColor = "orange";
-      }else {
-          button.style.backgroundColor = "gray";
-      }
 
-
+      const color = !is_uncovered ? (is_flagged ? "orange": "gray") : "green";
+      button.style.backgroundColor = color;
     }
 
     async function handleClick(event){
@@ -93,28 +91,47 @@
           'Content-Type': 'application/json'
         }
       });
+
+      const {adjacents_to_uncover, game_status} = await response.json()
        if (response.status === 400){
           pressedCell.style.backgroundColor = 'red';
-          alert("You lost :(")
-          const buttons = document.getElementsByTagName("button");
-          for (button of buttons) {
-            button.setAttribute("disabled", "");
-          }
+          endGame(game_status)
        } else {
-        const data = await response.json()
         const table = document.getElementById("board");
-        data.forEach(coords => {
+
+        adjacents_to_uncover.forEach(coords => {
           const trs = table.getElementsByTagName("tr");
           const tr = trs[coords[0]];
           const tds = tr.getElementsByTagName("td");
           const td = tds[coords[1]];
           td.getElementsByTagName("button")[0].style.backgroundColor = "green";
-        }
+        });
 
-        )
-         pressedCell.style.backgroundColor = 'green';
+        pressedCell.style.backgroundColor = 'green';
+        if (game_status === "WON"){
+          endGame(game_status)
+        }
        }
     }
+
+    const gameStatus = {
+      WON: "Congratulations! You won!",
+      LST: "You lost :("
+    }
+
+    function endGame(status){
+      disableBoard()
+      const gameStatusContainer = document.getElementById("gameStatus");
+      gameStatusContainer.innerText = gameStatus[status];
+    }
+
+    function disableBoard() {
+      const buttons = document.getElementsByTagName("button");
+        for (button of buttons) {
+            button.setAttribute("disabled", "");
+        }
+    }
+
   </script>
 </body>
 </html>

@@ -1,14 +1,12 @@
 import json
 
+from django.core import serializers
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 
-from django.core import serializers
-from django.shortcuts import get_object_or_404
-
-from game.services import find_adjacents
-from game.models import Board, Cell
+from game.models import Board
+from game.services import find_adjacents, validate_game_finished
 
 
 def get_board(request):
@@ -43,19 +41,36 @@ def get_cell(body):
 def click(request):
     if request.method == 'POST':
         cell = get_cell(request.body)
-
         if cell.is_mine:
-            return JsonResponse({}, status=400, safe=False)
+            cell.board.status = Board.LOST
+            cell.board.save()
+            return JsonResponse({"game_status": Board.LOST}, status=400,
+                                safe=False)
+
+        cell.is_uncovered = True
+        cell.save()
+
         adjacents = find_adjacents(cell.board, cell.row, cell.col)
-        return JsonResponse(adjacents, status=200, safe=False)
+        is_game_won = validate_game_finished(cell.board)
+
+        game_status = Board.WON if is_game_won else Board.PLAYING
+        if is_game_won:
+            cell.board.status = Board.WON
+            cell.board.save()
+
+        return JsonResponse({"adjacents_to_uncover": adjacents,
+                            "game_status": game_status}, status=200,
+                            safe=False)
 
 
 @csrf_exempt
 def flag(request):
     if request.method == 'POST':
         cell = get_cell(request.body)
-        cell.is_flagged = not cell.is_flagged
-        cell.save()
+        if not cell.is_uncovered:
+            cell.is_flagged = not cell.is_flagged
+            cell.save()
 
-        return JsonResponse({"is_flagged": cell.is_flagged}, status=200,
+        return JsonResponse({"is_flagged": cell.is_flagged,
+                            "is_uncovered": cell.is_uncovered}, status=200,
                             safe=False)

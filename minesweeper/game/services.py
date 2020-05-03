@@ -1,6 +1,11 @@
-def validate_game_finished(board, total_cells_discovered):
+from game.models import Cell
+
+
+def validate_game_finished(board):
+    total_cells_discovered = board.cell_set.filter(is_uncovered=True)
     total_cells = board.width * board.height
-    if total_cells_discovered + board.amount_of_mines == total_cells:
+
+    if len(total_cells_discovered) + board.amount_of_mines == total_cells:
         return True
     return False
 
@@ -34,6 +39,11 @@ def find_adjacents(board, x, y, visited=None):
                 continue
 
             cells_to_reveal.append((i, j))
+
+            cell_object = Cell.objects.get(board=board, row=i, col=j)
+            cell_object.is_uncovered = True
+            cell_object.save()
+
             visited.append((i, j))
             recursive_adjacents = find_adjacents(board, i, j, visited)
             cells_to_reveal.extend(recursive_adjacents)
