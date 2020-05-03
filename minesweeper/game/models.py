@@ -53,5 +53,6 @@ class Cell(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE)
     row = models.PositiveIntegerField()
     col = models.PositiveIntegerField()
-    flagged = models.BooleanField(default=False)
+    is_flagged = models.BooleanField(default=False)
     is_mine = models.BooleanField(default=False)
+    is_uncovered = models.BooleanField(default=False)

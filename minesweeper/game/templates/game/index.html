@@ -40,18 +40,52 @@
           button.setAttribute("data-x", i);
           button.setAttribute("data-y", j);
           button.setAttribute("onClick", "handleClick(event)");
+          button.setAttribute("oncontextmenu", "flagCell(event)");
+
+
           td.appendChild(button);
         }
 
       }
     })
 
-    async function handleClick(event){
-      const pressedCell = event.target;
+    function getCellData (pressedCell) {
       const x = pressedCell.dataset.x;
       const y = pressedCell.dataset.y;
 
       const boardId = document.getElementById("board").dataset.boardId;
+
+      return {x, y, boardId};
+    }
+    async function flagCell(event){
+      event.preventDefault()
+      const {x, y, boardId} = getCellData(event.target);
+
+      const response = await fetch('/game/flag/', {
+        method: 'POST',
+        body: JSON.stringify({x, y, boardId }),
+        headers:{
+          'Content-Type': 'application/json'
+        }
+
+      });
+
+      const {is_flagged} = await response.json()
+      const tr = document.getElementsByTagName("tr")[x];
+      const button = tr.getElementsByTagName("button")[y];
+      if (is_flagged) {
+          button.style.backgroundColor = "orange";
+      }else {
+          button.style.backgroundColor = "gray";
+      }
+
+
+    }
+
+    async function handleClick(event){
+      event.preventDefault();
+      const pressedCell = event.target;
+      const {x, y, boardId} = getCellData(pressedCell);
       const response = await fetch('/game/click/', {
         method: 'POST',
         body: JSON.stringify({x, y, boardId }),
