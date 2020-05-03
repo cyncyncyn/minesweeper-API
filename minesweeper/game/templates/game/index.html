@@ -20,24 +20,27 @@
       const response = await fetch("/game/board/");
       return response.json();
     }
-    getBoard().then(config => {
-      const table = document.getElementById("board")
-      let currentTr = document.createElement("tr")
-      const {boardSize, boardId} = config;
-      table.dataset.boardId = boardId;
+    getBoard().then(board => {
+      const table = document.getElementById("board");
+      let currentTr = document.createElement("tr");
 
-      for(let i=0; i< boardSize; i++){
+      table.dataset.boardId = board.pk;
+
+
+      const {width, height} = board.fields;
+
+      for(let i=0; i< width; i++){
         currentTr = document.createElement("tr");
         table.appendChild(currentTr)
 
-        for(let j=0; j < boardSize; j++) {
-          const td = document.createElement("td")
-          currentTr.appendChild(td)
-          const button = document.createElement("button")
-          button.setAttribute("data-x", i)
-          button.setAttribute("data-y", j)
-          button.setAttribute("onClick", "handleClick(event)")
-          td.appendChild(button)
+        for(let j=0; j < height; j++) {
+          const td = document.createElement("td");
+          currentTr.appendChild(td);
+          const button = document.createElement("button");
+          button.setAttribute("data-x", i);
+          button.setAttribute("data-y", j);
+          button.setAttribute("onClick", "handleClick(event)");
+          td.appendChild(button);
         }
 
       }
@@ -57,15 +60,15 @@
         }
       });
        if (response.status === 400){
-          pressedCell.style.backgroundColor = 'red'
+          pressedCell.style.backgroundColor = 'red';
           alert("You lost :(")
-          const buttons = document.getElementsByTagName("button")
+          const buttons = document.getElementsByTagName("button");
           for (button of buttons) {
-            button.setAttribute("disabled", "")
+            button.setAttribute("disabled", "");
           }
        } else {
         const data = await response.json()
-        const table = document.getElementById("board")
+        const table = document.getElementById("board");
         data.forEach(coords => {
           const trs = table.getElementsByTagName("tr");
           const tr = trs[coords[0]];
@@ -75,7 +78,7 @@
         }
 
         )
-         pressedCell.style.backgroundColor = 'green'
+         pressedCell.style.backgroundColor = 'green';
        }
     }
   </script>

@@ -1,19 +1,24 @@
 import json
-import random
 
-from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from .services import BOARD_SIZE, find_adjacents, cell_has_mine
+
+from django.core import serializers
+from django.shortcuts import get_object_or_404
+
+from game.services import find_adjacents
+from game.models import Board, Cell
 
 
 def get_board(request):
+    # TODO: Check PK for exisitng game
+    board = Board()
+    board.generate_cells()
+    serialized_board = serializers.serialize("json", [board])
+
     return JsonResponse(
-        {
-            "boardSize": BOARD_SIZE,
-            "boardId": random.randrange(len(settings.BOARDS))
-        }, safe=False)
+            json.loads(serialized_board)[0], safe=False)
 
 
 def index(request):
@@ -27,10 +32,13 @@ def click(request):
         x = int(data["x"])
         y = int(data["y"])
 
-        board_id = int(data.get("boardId", 0))
-        board = settings.BOARDS[board_id]
+        # TODO: validate if id is not in request
+        board_id = data.get("boardId", 0)
 
-        if cell_has_mine(board, x, y):
+        board = get_object_or_404(Board, pk=board_id)
+        cell = board.cell_set.get(row=x, col=y)
+
+        if cell.is_mine:
             return JsonResponse({}, status=400, safe=False)
         adjacents = find_adjacents(board, x, y)
         return JsonResponse(adjacents, status=200, safe=False)

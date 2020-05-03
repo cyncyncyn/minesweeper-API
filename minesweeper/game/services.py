@@ -1,34 +1,8 @@
-BOARD_SIZE = 8
-
-
-def generate_board(random_mines):
-    board = []
-    for rowIndex in range(0, BOARD_SIZE):
-        row = []
-        for colIndex in range(0, BOARD_SIZE):
-            hasMine = (rowIndex, colIndex) in random_mines
-            row.append(hasMine)
-        board.append(row)
-    return board
-
-
-def generate_boards():
-    boards = []
-    for x in range(10):
-        import random
-        random_mines = [
-            (
-                random.randrange(0, BOARD_SIZE),
-                random.randrange(0, BOARD_SIZE)
-            ) for i in range(10)
-         ]
-        boards.append(generate_board(random_mines))
-
-    return boards
-
-
-def cell_has_mine(board, x, y):
-    return board[x][y]
+def validate_game_finished(board, total_cells_discovered):
+    total_cells = board.width * board.height
+    if total_cells_discovered + board.amount_of_mines == total_cells:
+        return True
+    return False
 
 
 def surround_generator(x, y, max_row, max_col):
@@ -42,15 +16,15 @@ def find_adjacents(board, x, y, visited=None):
     visited = visited or []
     visited.append((x, y))
 
-    rowLimit = len(board)
-    colLimit = len(board[0])
+    rowLimit = board.width
+    colLimit = board.height
 
     cells_to_reveal = []
-    has_mine = False
     neighbours_has_mine = []
     for i, j in surround_generator(x, y, rowLimit, colLimit):
-        has_mine = board[i][j]
-        neighbours_has_mine.append(has_mine)
+        # TODO validate 404
+        cell = board.cell_set.get(row=i, col=j)
+        neighbours_has_mine.append(cell.is_mine)
 
     if any(neighbours_has_mine):
         return []
