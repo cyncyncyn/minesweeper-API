@@ -122,7 +122,7 @@ The API client was developed in JavaScript (With HTML and CSS).
 
 ## The project
 
-### V 1.5
+### V 2.0
 
 Functionalities added:
 * Ability to 'flag' a cell with a question mark or red flag (for time issues right now the flag is an orange cell)
