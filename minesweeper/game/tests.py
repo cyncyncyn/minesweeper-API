@@ -60,10 +60,11 @@ class APITestCase(TestCase):
 
 class FindAdjacentsWithoutMinesTestCase(TestCase):
 
-    def setUp(self):
-        board = Board(width=3, height=3, amount_of_mines=0)
-        board.generate_cells()
-        self.board = board
+    board = [
+            [False, False, False],
+            [False, False, False],
+            [False, False, False],
+    ]
 
     def test_from_center(self):
         adjacents = set(find_adjacents(self.board, 1, 1))
@@ -117,15 +118,11 @@ class FindAdjacentsWithoutMinesTestCase(TestCase):
 class FindAdjacentsWithMinesTestCase(TestCase):
 
     def test_from_left_bottom_with_mine_in_center(self):
-        #    [False, False, False],
-        #    [False, True,  False],
-        #    [False, False, False],
-
-        board = Board(width=3, height=3, amount_of_mines=0)
-        board.generate_cells()
-        cell_1_1 = board.cell_set.get(row=1, col=1)
-        cell_1_1.is_mine = True
-        cell_1_1.save()
+        board = [
+            [False, False, False],
+            [False, True,  False],
+            [False, False, False],
+        ]
 
         adjacents = set(find_adjacents(board, 2, 0))
         expected_adjacents = set([])
@@ -133,14 +130,11 @@ class FindAdjacentsWithMinesTestCase(TestCase):
         self.assertEqual(adjacents, expected_adjacents)
 
     def test_from_left_bottom_with_mine_in_top_right(self):
-        #    [False, False, True],
-        #    [False, False, False],
-        #    [False, False, False],
-        board = Board(width=3, height=3, amount_of_mines=0)
-        board.generate_cells()
-        cell_1_1 = board.cell_set.get(row=0, col=2)
-        cell_1_1.is_mine = True
-        cell_1_1.save()
+        board = [
+            [False, False, True],
+            [False, False, False],
+            [False, False, False],
+        ]
 
         adjacents = set(find_adjacents(board, 2, 0))
         expected_adjacents = set([
@@ -156,14 +150,11 @@ class FindAdjacentsWithMinesTestCase(TestCase):
         self.assertEqual(adjacents, expected_adjacents)
 
     def test_from_right_botom_with_mine_in_top_right(self):
-        #    [True,  False, False],
-        #    [False, False, False],
-        #    [False, False, False],
-        board = Board(width=3, height=3, amount_of_mines=0)
-        board.generate_cells()
-        cell_0_0 = board.cell_set.get(row=0, col=0)
-        cell_0_0.is_mine = True
-        cell_0_0.save()
+        board = [
+            [True,  False, False],
+            [False, False, False],
+            [False, False, False],
+        ]
 
         adjacents = set(find_adjacents(board, 2, 2))
         expected_adjacents = set([
