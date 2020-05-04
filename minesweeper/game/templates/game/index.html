@@ -32,7 +32,7 @@
   let counter = 0;
   let gameStarted = false;
     const timerDiv = document.getElementById("clock")
-    function myTimer() {// TODO Name
+    function minesweeperTimer() {
       timer = setInterval(function() {
         counter++;
         timerDiv.innerText = counter;
@@ -161,7 +161,7 @@
 
     function startTimer() {
       if (!gameStarted) {
-           myTimer();
+           minesweeperTimer();
            gameStarted = true;
          }
     }
