@@ -14,6 +14,7 @@
 
 <body>
     <div>Game status: <span id="gameStatus">Playing</span></div>
+    <div id="clock">0</div>
     <table id="board" style="border: 1px solid black">
     </table>
   <script>
@@ -21,7 +22,21 @@
       const response = await fetch("/game/board/");
       return response.json();
     }
+
+  // TODO: create an object instead of global variables
+  let timer = null;
+  let counter = 0;
+  let gameStarted = false;
+    const timerDiv = document.getElementById("clock")
+    function myTimer() {
+      timer = setInterval(function() {
+        counter++;
+        timerDiv.innerText = counter;
+      }, 1000)
+
+    }
     getBoard().then(board => {
+
       const table = document.getElementById("board");
       let currentTr = document.createElement("tr");
 
@@ -73,6 +88,8 @@
 
       const {is_flagged, is_uncovered} = await response.json();
 
+      startTimer();
+
       const tr = document.getElementsByTagName("tr")[x];
       const button = tr.getElementsByTagName("button")[y];
 
@@ -97,6 +114,8 @@
           pressedCell.style.backgroundColor = 'red';
           endGame(game_status)
        } else {
+         startTimer();
+
         const table = document.getElementById("board");
 
         adjacents_to_uncover.forEach(coords => {
@@ -119,8 +138,16 @@
       LST: "You lost :("
     }
 
+    function startTimer() {
+      if (!gameStarted) {
+           myTimer();
+           gameStarted = true;
+         }
+    }
+
     function endGame(status){
-      disableBoard()
+      clearTimeout(timer);
+      disableBoard();
       const gameStatusContainer = document.getElementById("gameStatus");
       gameStatusContainer.innerText = gameStatus[status];
     }
