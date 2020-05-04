@@ -5,8 +5,13 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from game.models import Cell, Board
-from game.services import find_adjacents, validate_game_finished
+from game.models import Board, Cell
+from game.services import (board_to_list, create_game, find_adjacents,
+                           get_cell, uncover_cells, validate_game_finished)
+
+
+def index(request):
+    return render(request, template_name="game/index.html")
 
 
 def get_board(request, board_id):
@@ -33,36 +38,19 @@ def create_board(request):
         height = int(data.get('height', Board.DEFAULT_BOARD_SIZE))
         amount_of_mines = int(data.get('mines', Board.DEFAULT_MINES_AMOUNT))
 
-        board = Board(width=width, height=height,
-                      amount_of_mines=amount_of_mines)
-        board.save()
-        board.generate_cells()
+        board = create_game(width, height, amount_of_mines)
         serialized_board = serializers.serialize("json", [board])
 
         return JsonResponse(
                 json.loads(serialized_board)[0], safe=False)
 
 
-def index(request):
-    return render(request, template_name="game/index.html")
-
-
-def get_cell(body):
-    data = json.loads(body.decode('utf-8'))
-    x = int(data["x"])
-    y = int(data["y"])
-    board_id = data["boardId"]
-
-    board = Board.objects.get(pk=board_id, status=Board.PLAYING)
-    cell = board.cell_set.get(row=x, col=y)
-    return cell
-
-
 @csrf_exempt
 def click(request):
     if request.method == 'POST':
         try:
-            cell = get_cell(request.body)
+            data = json.loads(request.body.decode('utf-8'))
+            cell = get_cell(data)
         except (KeyError,  json.JSONDecodeError):
             return JsonResponse({"message": "x, y and boardId are required"},
                                 status=400, safe=False)
@@ -80,16 +68,24 @@ def click(request):
             return JsonResponse({"game_status": Board.LOST}, status=400,
                                 safe=False)
 
+        # TODO: move this to a service
         cell.is_uncovered = True
         cell.save()
 
-        adjacents = find_adjacents(cell.board, cell.row, cell.col)
-        is_game_won = validate_game_finished(cell.board)
+        board = cell.board
+        cells = cell.board.cell_set.all()
+
+        list_board = board_to_list(board, cells)
+        adjacents = find_adjacents(list_board, cell.row, cell.col)
+
+        uncover_cells(cells, adjacents)
+
+        is_game_won = validate_game_finished(board)
 
         game_status = Board.WON if is_game_won else Board.PLAYING
         if is_game_won:
-            cell.board.status = Board.WON
-            cell.board.save()
+            board.status = Board.WON
+            board.save()
 
         return JsonResponse({"adjacents_to_uncover": adjacents,
                             "game_status": game_status}, status=200,
@@ -100,7 +96,8 @@ def click(request):
 def flag(request):
     if request.method == 'POST':
         try:
-            cell = get_cell(request.body)
+            data = json.loads(request.body.decode('utf-8'))
+            cell = get_cell(data)
         except (KeyError,  json.JSONDecodeError):
             return JsonResponse(
                 {"message": "x, y and boardId are required"}, status=400,

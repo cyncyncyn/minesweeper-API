@@ -1,4 +1,45 @@
-from game.models import Cell
+from game.models import Board
+
+
+def create_game(width, height, amount_of_mines):
+    board = Board(width=width, height=height,
+                  amount_of_mines=amount_of_mines)
+
+    board.save()
+    board.generate_cells()
+    return board
+
+
+def get_cell(data):
+    x = int(data["x"])
+    y = int(data["y"])
+    board_id = data["boardId"]
+
+    board = Board.objects.get(pk=board_id, status=Board.PLAYING)
+    cell = board.cell_set.get(row=x, col=y)
+    return cell
+
+
+def uncover_cells(cells, adjacents):
+    for cell in cells:
+        if (cell.row, cell.col) in adjacents:
+            cell.is_uncovered = True
+            cell.save()
+
+
+def board_to_list(board, cells):
+    board_list = []
+
+    min = 0
+    max = 8
+    for _ in range(board.width):
+        row = []
+        for c in cells[min:max]:
+            row.append(c.is_mine)
+        board_list.append(row)
+        min = min + board.width
+        max = min + board.width
+    return board_list
 
 
 def validate_game_finished(board):
@@ -21,14 +62,15 @@ def find_adjacents(board, x, y, visited=None):
     visited = visited or []
     visited.append((x, y))
 
-    rowLimit = board.width
-    colLimit = board.height
+    rowLimit = len(board)
+    colLimit = len(board[0])
 
     cells_to_reveal = []
+    has_mine = False
     neighbours_has_mine = []
     for i, j in surround_generator(x, y, rowLimit, colLimit):
-        cell = board.cell_set.get(row=i, col=j)
-        neighbours_has_mine.append(cell.is_mine)
+        has_mine = board[i][j]
+        neighbours_has_mine.append(has_mine)
 
     if any(neighbours_has_mine):
         return []
@@ -38,11 +80,6 @@ def find_adjacents(board, x, y, visited=None):
                 continue
 
             cells_to_reveal.append((i, j))
-
-            cell_object = Cell.objects.get(board=board, row=i, col=j)
-            cell_object.is_uncovered = True
-            cell_object.save()
-
             visited.append((i, j))
             recursive_adjacents = find_adjacents(board, i, j, visited)
             cells_to_reveal.extend(recursive_adjacents)

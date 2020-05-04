@@ -11,7 +11,7 @@ class Board(models.Model):
     PLAYING = "PLY"
     WON = "WON"
     LOST = "LST"
-    status = (
+    POSIBLE_STATUS = (
         (PLAYING, "Playing"),
         (WON, "Won"),
         (LOST, "Lost"),
@@ -20,9 +20,10 @@ class Board(models.Model):
     width = models.PositiveIntegerField(default=DEFAULT_BOARD_SIZE)
     height = models.PositiveIntegerField(default=DEFAULT_BOARD_SIZE)
     amount_of_mines = models.PositiveIntegerField(default=DEFAULT_MINES_AMOUNT)
-    status = models.CharField(choices=status, max_length=3, default=PLAYING)
+    status = models.CharField(choices=POSIBLE_STATUS, max_length=3,
+                              default=PLAYING)
 
-    # TODO: fix the repeated mines
+    #  TODO: Fix mine overlapping
     def generate_random_mines(self, amount_of_mines):
         return [
            (
