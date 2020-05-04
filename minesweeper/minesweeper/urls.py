@@ -14,9 +14,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from game.views import create_board, index, click, flag
+from game.views import get_board, create_board, index, click, flag
 
 urlpatterns = [
+    path('game/board/<uuid:board_id>/', get_board),
     path('game/board/', create_board),
     path('game/click/', click),
     path('game/flag/', flag),

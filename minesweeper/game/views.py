@@ -2,17 +2,19 @@ import json
 
 from django.core import serializers
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from game.models import Board, BOARD_SIZE, MINES_AMOUNT
+from game.models import Cell, Board, BOARD_SIZE, MINES_AMOUNT
 from game.services import find_adjacents, validate_game_finished
 
 
-def get_board(request):
-    # TODO: Check PK for exisitng game
-    board = Board()
-    board.generate_cells()
+def get_board(request, board_id):
+    try:
+        board = Board.objects.get(pk=board_id)
+    except Board.DoesNotExist:
+        return JsonResponse({"message": "Board does not exist"}, status=404,
+                            safe=False)
     serialized_board = serializers.serialize("json", [board])
 
     return JsonResponse(
