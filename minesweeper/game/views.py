@@ -23,15 +23,18 @@ def get_board(request, board_id):
 
 @csrf_exempt
 def create_board(request):
-    # TODO: validation of sending something
     if request.method == 'POST':
-        data = json.loads(request.body.decode('utf-8'))
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+        except (json.JSONDecodeError):
+            data = {}
 
         width = int(data.get('width', BOARD_SIZE))
         height = int(data.get('height', BOARD_SIZE))
         amount_of_mines = int(data.get('mines', MINES_AMOUNT))
 
-        board = Board(width=width, height=height, amount_of_mines=amount_of_mines)
+        board = Board(width=width, height=height,
+                      amount_of_mines=amount_of_mines)
         board.save()
         board.generate_cells()
         serialized_board = serializers.serialize("json", [board])
@@ -50,16 +53,26 @@ def get_cell(body):
     y = int(data["y"])
     board_id = data["boardId"]
 
-    board = get_object_or_404(Board, pk=board_id)
+    board = Board.objects.get(pk=board_id, status=Board.PLAYING)
     cell = board.cell_set.get(row=x, col=y)
-
     return cell
 
 
 @csrf_exempt
 def click(request):
     if request.method == 'POST':
-        cell = get_cell(request.body)
+        try:
+            cell = get_cell(request.body)
+        except (KeyError,  json.JSONDecodeError):
+            return JsonResponse({"message": "x, y and boardId are required"},
+             status=400, safe=False)
+        except Cell.DoesNotExist:
+            return JsonResponse({"message": "Cell does not exist for given board"},
+             status=404, safe=False)
+        except Board.DoesNotExist:
+            return JsonResponse({"message": "Board does not exist"},
+             status=404, safe=False)
+
         if cell.is_mine:
             cell.board.status = Board.LOST
             cell.board.save()
@@ -85,7 +98,15 @@ def click(request):
 @csrf_exempt
 def flag(request):
     if request.method == 'POST':
-        cell = get_cell(request.body)
+        try:
+            cell = get_cell(request.body)
+        except (KeyError,  json.JSONDecodeError):
+            return JsonResponse({"message": "x, y and boardId are required"}, status=400, safe=False)
+        except Cell.DoesNotExist:
+            return JsonResponse({"message": "Cell does not exist for given board"}, status=404, safe=False)
+        except Board.DoesNotExist:
+            return JsonResponse({"message": "Board does not exist"}, status=404, safe=False)
+
         if not cell.is_uncovered:
             cell.is_flagged = not cell.is_flagged
             cell.save()
