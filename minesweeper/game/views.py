@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from game.models import Cell, Board, BOARD_SIZE, MINES_AMOUNT
+from game.models import Cell, Board
 from game.services import find_adjacents, validate_game_finished
 
 
@@ -29,9 +29,9 @@ def create_board(request):
         except (json.JSONDecodeError):
             data = {}
 
-        width = int(data.get('width', BOARD_SIZE))
-        height = int(data.get('height', BOARD_SIZE))
-        amount_of_mines = int(data.get('mines', MINES_AMOUNT))
+        width = int(data.get('width', Board.DEFAULT_BOARD_SIZE))
+        height = int(data.get('height', Board.DEFAULT_BOARD_SIZE))
+        amount_of_mines = int(data.get('mines', Board.DEFAULT_MINES_AMOUNT))
 
         board = Board(width=width, height=height,
                       amount_of_mines=amount_of_mines)
@@ -65,13 +65,14 @@ def click(request):
             cell = get_cell(request.body)
         except (KeyError,  json.JSONDecodeError):
             return JsonResponse({"message": "x, y and boardId are required"},
-             status=400, safe=False)
+                                status=400, safe=False)
         except Cell.DoesNotExist:
-            return JsonResponse({"message": "Cell does not exist for given board"},
-             status=404, safe=False)
+            return JsonResponse(
+                {"message": "Cell does not exist for given board"},
+                status=404, safe=False)
         except Board.DoesNotExist:
             return JsonResponse({"message": "Board does not exist"},
-             status=404, safe=False)
+                                status=404, safe=False)
 
         if cell.is_mine:
             cell.board.status = Board.LOST
@@ -101,11 +102,16 @@ def flag(request):
         try:
             cell = get_cell(request.body)
         except (KeyError,  json.JSONDecodeError):
-            return JsonResponse({"message": "x, y and boardId are required"}, status=400, safe=False)
+            return JsonResponse(
+                {"message": "x, y and boardId are required"}, status=400,
+                safe=False)
         except Cell.DoesNotExist:
-            return JsonResponse({"message": "Cell does not exist for given board"}, status=404, safe=False)
+            return JsonResponse(
+                {"message": "Cell does not exist for given board"}, status=404,
+                safe=False)
         except Board.DoesNotExist:
-            return JsonResponse({"message": "Board does not exist"}, status=404, safe=False)
+            return JsonResponse(
+                {"message": "Board does not exist"}, status=404, safe=False)
 
         if not cell.is_uncovered:
             cell.is_flagged = not cell.is_flagged

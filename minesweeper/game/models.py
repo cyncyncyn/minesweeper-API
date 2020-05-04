@@ -4,11 +4,10 @@ import random
 from django.db import models
 
 
-BOARD_SIZE = 8
-MINES_AMOUNT = 10
-
-
 class Board(models.Model):
+    DEFAULT_BOARD_SIZE = 8
+    DEFAULT_MINES_AMOUNT = 10
+
     PLAYING = "PLY"
     WON = "WON"
     LOST = "LST"
@@ -18,9 +17,9 @@ class Board(models.Model):
         (LOST, "Lost"),
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    width = models.PositiveIntegerField(default=BOARD_SIZE)
-    height = models.PositiveIntegerField(default=BOARD_SIZE)
-    amount_of_mines = models.PositiveIntegerField(default=MINES_AMOUNT)
+    width = models.PositiveIntegerField(default=DEFAULT_BOARD_SIZE)
+    height = models.PositiveIntegerField(default=DEFAULT_BOARD_SIZE)
+    amount_of_mines = models.PositiveIntegerField(default=DEFAULT_MINES_AMOUNT)
     status = models.CharField(choices=status, max_length=3, default=PLAYING)
 
     # TODO: fix the repeated mines
