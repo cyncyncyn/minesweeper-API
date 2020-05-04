@@ -27,9 +27,9 @@ class Board(models.Model):
     def generate_random_mines(self, amount_of_mines):
         return [
            (
-               random.randrange(0, BOARD_SIZE),
-               random.randrange(0, BOARD_SIZE)
-           ) for _ in range(amount_of_mines)
+               random.randrange(0, self.width),
+               random.randrange(0, self.height)
+           ) for _ in range(self.amount_of_mines)
         ]
 
     def generate_cells(self):

@@ -13,57 +13,78 @@
 </head>
 
 <body>
+    <div>
+      <form>
+        <label>Width: <input id="width" type="number" value="8"  min="1" max="50" /></label>
+        <label>Height: <input id="height" type="number" value="8"  min="1" max="50" /></label>
+        <label>Mines: <input id="mines" type="number" value="10" min="1" max="50" /></label>
+        <input type="button" onclick="createBoard()" value="Create Board"/>
+
+      </form>
+    </div>
     <div>Game status: <span id="gameStatus">Playing</span></div>
     <div id="clock">0</div>
     <table id="board" style="border: 1px solid black">
     </table>
   <script>
-    async function getBoard() {
-      const response = await fetch("/game/board/");
-      return response.json();
-    }
-
-  // TODO: create an object instead of global variables
+ // TODO: create an object instead of global variables
   let timer = null;
   let counter = 0;
   let gameStarted = false;
     const timerDiv = document.getElementById("clock")
-    function myTimer() {
+    function myTimer() {// TODO Name
       timer = setInterval(function() {
         counter++;
         timerDiv.innerText = counter;
       }, 1000)
 
     }
-    getBoard().then(board => {
-
+    async function createBoard(event) {
       const table = document.getElementById("board");
-      let currentTr = document.createElement("tr");
+      table.innerHTML = '';
 
-      table.dataset.boardId = board.pk;
+      const width = document.getElementById("width").value;
+      const height = document.getElementById("height").value;
+      const mines = document.getElementById("mines").value;
+      const params = {}
+      // TODO: validate minimum mines
+      const response = await fetch("/game/board/", {
+          method: 'POST',
+          body: JSON.stringify({width, height, mines}),
+          headers:{
+            'Content-Type': 'application/json'
+          }
+        });
+      return response.json()
+      .then(board => {
+
+        let currentTr = document.createElement("tr");
+
+        table.dataset.boardId = board.pk;
 
 
-      const {width, height} = board.fields;
+        const {width, height} = board.fields;
 
-      for(let i=0; i< width; i++){
-        currentTr = document.createElement("tr");
-        table.appendChild(currentTr)
+        for(let i=0; i< width; i++){
+          currentTr = document.createElement("tr");
+          table.appendChild(currentTr)
 
-        for(let j=0; j < height; j++) {
-          const td = document.createElement("td");
-          currentTr.appendChild(td);
-          const button = document.createElement("button");
-          button.setAttribute("data-x", i);
-          button.setAttribute("data-y", j);
-          button.setAttribute("onClick", "handleClick(event)");
-          button.setAttribute("oncontextmenu", "flagCell(event)");
+          for(let j=0; j < height; j++) {
+            const td = document.createElement("td");
+            currentTr.appendChild(td);
+            const button = document.createElement("button");
+            button.setAttribute("data-x", i);
+            button.setAttribute("data-y", j);
+            button.setAttribute("onClick", "handleClick(event)");
+            button.setAttribute("oncontextmenu", "flagCell(event)");
 
 
-          td.appendChild(button);
+            td.appendChild(button);
+          }
+
         }
-
-      }
-    })
+      })
+    }
 
     function getCellData (pressedCell) {
       const x = pressedCell.dataset.x;

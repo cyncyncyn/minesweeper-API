@@ -2,10 +2,10 @@ from game.models import Cell
 
 
 def validate_game_finished(board):
-    total_cells_discovered = board.cell_set.filter(is_uncovered=True)
+    total_cells_discovered = board.cell_set.filter(is_uncovered=True).count()
     total_cells = board.width * board.height
 
-    if len(total_cells_discovered) + board.amount_of_mines == total_cells:
+    if total_cells_discovered + board.amount_of_mines == total_cells:
         return True
     return False
 
@@ -27,7 +27,6 @@ def find_adjacents(board, x, y, visited=None):
     cells_to_reveal = []
     neighbours_has_mine = []
     for i, j in surround_generator(x, y, rowLimit, colLimit):
-        # TODO validate 404
         cell = board.cell_set.get(row=i, col=j)
         neighbours_has_mine.append(cell.is_mine)
 

@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 
-from game.models import Board
+from game.models import Board, BOARD_SIZE, MINES_AMOUNT
 from game.services import find_adjacents, validate_game_finished
 
 
@@ -19,6 +19,25 @@ def get_board(request):
             json.loads(serialized_board)[0], safe=False)
 
 
+@csrf_exempt
+def create_board(request):
+    # TODO: validation of sending something
+    if request.method == 'POST':
+        data = json.loads(request.body.decode('utf-8'))
+
+        width = int(data.get('width', BOARD_SIZE))
+        height = int(data.get('height', BOARD_SIZE))
+        amount_of_mines = int(data.get('mines', MINES_AMOUNT))
+
+        board = Board(width=width, height=height, amount_of_mines=amount_of_mines)
+        board.save()
+        board.generate_cells()
+        serialized_board = serializers.serialize("json", [board])
+
+        return JsonResponse(
+                json.loads(serialized_board)[0], safe=False)
+
+
 def index(request):
     return render(request, template_name="game/index.html")
 
@@ -27,9 +46,7 @@ def get_cell(body):
     data = json.loads(body.decode('utf-8'))
     x = int(data["x"])
     y = int(data["y"])
-
-    # TODO: validate if id is not in request
-    board_id = data.get("boardId", 0)
+    board_id = data["boardId"]
 
     board = get_object_or_404(Board, pk=board_id)
     cell = board.cell_set.get(row=x, col=y)
