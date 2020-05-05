@@ -1,3 +1,4 @@
 venv/
-**/*.sqlite
+**/*.sqlite3
 *.pyc
+*.vscode/
